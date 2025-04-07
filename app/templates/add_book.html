@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
+    <title>Dodaj ksiązke</title>
+</head>
+<body>
+    <h1>Dodaj książkę</h1>
+<form method="POST">
+    <input name="title" placeholder="Tytuł książki"><br><br>
+    <label>Autorzy:</label><br>
+    {% for author in authors %}
+        <input type="checkbox" name="authors" value="{{ author.id }}"> {{ author.name }}<br>
+    {% endfor %}
+    <br>
+    <button type="submit">Dodaj</button>
+</form>
+<a href="{{ url_for('index') }}">Powrót</a>
+
+</body>
+</html>
