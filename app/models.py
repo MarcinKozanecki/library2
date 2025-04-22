@@ -12,9 +12,23 @@ class Book(db.Model):
     is_available = db.Column(db.Boolean, default=True)
     borrowings = db.relationship('Borrowing', backref='book', lazy=True)
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'is_available': self.is_available,
+            'authors': [author.name for author in self.authors]
+        }
+
 class Author(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name
+        }
 
 class Borrowing(db.Model):
     id = db.Column(db.Integer, primary_key=True)

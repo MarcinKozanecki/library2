@@ -1,8 +1,9 @@
 from app import app, db
-from flask import render_template, request, redirect, url_for
+from flask import render_template, request, redirect, url_for, jsonify
 from app.models import Book, Author, Borrowing
 from datetime import datetime
 
+# --- Widoki HTML ---
 @app.route('/')
 def index():
     books = Book.query.all()
@@ -59,3 +60,50 @@ def return_book(book_id):
         book.is_available = True
         db.session.commit()
     return redirect(url_for('index'))
+
+# --- REST API ---
+
+@app.route('/api/books', methods=['GET'])
+def api_get_books():
+    books = Book.query.all()
+    return jsonify([book.to_dict() for book in books])
+
+@app.route('/api/books/<int:book_id>', methods=['GET'])
+def api_get_book(book_id):
+    book = Book.query.get_or_404(book_id)
+    return jsonify(book.to_dict())
+
+@app.route('/api/books', methods=['POST'])
+def api_add_book():
+    data = request.json
+    title = data.get('title')
+    author_ids = data.get('author_ids', [])
+    if not title or not author_ids:
+        return jsonify({'error': 'Missing title or authors'}), 400
+
+    book = Book(title=title)
+    for aid in author_ids:
+        author = Author.query.get(aid)
+        if author:
+            book.authors.append(author)
+
+    db.session.add(book)
+    db.session.commit()
+    return jsonify(book.to_dict()), 201
+
+@app.route('/api/books/<int:book_id>', methods=['DELETE'])
+def api_delete_book(book_id):
+    book = Book.query.get_or_404(book_id)
+    db.session.delete(book)
+    db.session.commit()
+    return jsonify({'message': 'Book deleted'})
+
+@app.route('/api/authors', methods=['GET'])
+def api_get_authors():
+    authors = Author.query.all()
+    return jsonify([author.to_dict() for author in authors])
+
+@app.route('/api/books/sorted/pages', methods=['GET'])
+def api_books_sorted_by_pages():
+    books = Book.query.order_by(Book.title).all()  # możesz zmienić na `pages` jeśli dodasz taką kolumnę
+    return jsonify([book.to_dict() for book in books])
